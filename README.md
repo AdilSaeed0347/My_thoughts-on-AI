@@ -1,0 +1,75 @@
+# 🧠 My_thoughts-on-AI
+
+Welcome to **My_thoughts-on-AI** — a focused, monthly-published collection of short essays and technical reflections about how AI is changing software, product and domain work.
+
+This repository is written for AI engineers, tech students, and builders who want concise, practical thinking about new AI innovations, tools, and workflows. New articles are published here one-by-one on a monthly cadence. Each piece is designed to be readable in 10–20 minutes and includes a short technical/strategy takeaway.
+
+Highlights
+- Audience: AI engineers, students, and builders
+- Cadence: 1 article published per month (monthly posts live in `/articles`)
+- Scope: generative AI, prompt & context engineering, AI-assisted development, and how domain expertise shapes AI outcomes
+
+---
+
+## 📚 Articles (published & planned)
+
+Below are the current and planned pieces. Each published article appears as a Markdown file under `articles/` and includes an author section and short summary.
+
+1. ️[**Domain Expertise > Coding**](articles/domain_expertise_vs_coding.md)
+	- AI can write code — but it can’t understand *why* something should be built.
+	- Local file: `articles/domain_expertise_vs_coding.md`
+
+2. **AI and Prompt Engineering** *(coming soon)*
+	- How mastering prompts and context helps humans collaborate with AI to produce creative and precise outcomes.
+	- Local file: `articles/ai_and_prompt_engineering.md` (draft)
+
+3. **The Future of Builders** *(upcoming)*
+	- A vision of how domain experts, not just coders, will shape industries by guiding AI-driven systems.
+	- Local file: `articles/the_future_of_builders.md` (planned)
+
+---
+
+## 🗒️ Notes & drafts
+
+Research notes, drafts, and idea sketches live in the `notes/` folder. Use these if you want to see early research or help shape upcoming articles.
+
+---
+
+## 👤 About the Author
+
+I’m **Adil Saeed**, a Software Engineering student from Charsadda, KPK, Pakistan. I explore generative AI, web development, and ML, and publish monthly reflections aimed at engineers and students.
+
+---
+
+## 🌐 Find Me Online
+
+- Medium: https://medium.com/@adilahmad0347
+- GitHub Discussions: open discussions on this repo to share feedback
+- Star this repo if you find the ideas useful
+
+---
+
+## Contributing
+
+I welcome contributions and feedback. Ways to help:
+
+- Open an issue to suggest a topic or correct a factual error.
+- File a PR to improve an article or fix typos. Use the article template in `articles/TEMPLATE.md` for new posts.
+- Suggest edits to the `articles/TEMPLATE.md` if you have a format preference.
+
+Publishing workflow (simple)
+
+1. Draft a new article as `articles/YYYY-MM-title.md` using `articles/TEMPLATE.md`.
+2. Open a PR with the draft and a short description of the takeaway.
+3. After review, merge and the monthly post will be considered published.
+
+---
+
+## License
+
+This repository is available under the MIT License — see `LICENSE` for details.
+
+---
+
+### ⚙️ Repository Structure
+
