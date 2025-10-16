@@ -5,9 +5,9 @@ Welcome to **My_thoughts-on-AI** — a focused, monthly-published collection of 
 This repository is written for AI engineers, tech students, and builders who want concise, practical thinking about new AI innovations, tools, and workflows. New articles are published here one-by-one on a monthly cadence. Each piece is designed to be readable in 10–20 minutes and includes a short technical/strategy takeaway.
 
 Highlights
-- Audience: AI engineers, students, and builders
+- Audience: AI engineers, developers, IT students, and Software builders
 - Cadence: 1 article published per month (monthly posts live in `/articles`)
-- Scope: generative AI, prompt & context engineering, AI-assisted development, and how domain expertise shapes AI outcomes
+- Scope: Artificuial Intelligence , generative AI, prompt & context engineering, AI-assisted development, New technologies and their impact 
 
 ---
 
