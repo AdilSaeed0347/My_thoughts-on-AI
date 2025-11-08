@@ -17,9 +17,14 @@ Below are the current and planned pieces. Each published article appears as a Ma
 
 📚 Articles (Published & Planned)
 
-- [Domain Expertise > Coding](https://medium.com/@yourusername/domain-expertise-vs-coding)
-- [Why Aspiring Generative AI Engineers Should Learn with Google Gemini]([https://medium.com/@yourusername/ai-and-prompt-engineering](https://medium.com/@adilahmad0347/why-aspiring-generative-ai-engineers-should-learn-with-google-gemini-c14718099ef4))
-- [My Thoughts on AI (Part 2)](https://medium.com/@yourusername/my-thoughts-on-ai-part-2)
+📚 Articles (Published & Planned)
+
+- [Why Aspiring Generative AI Engineers Should Learn with Google Gemini](https://medium.com/@adilahmad0347/why-aspiring-generative-ai-engineers-should-learn-with-google-gemini-c14718099ef4)
+- [Domain Expertise > Coding](https://medium.com/@adilahmad0347/domain-expertise-coding-15a878f923d2)
+- [AI and Prompt Engineering](https://medium.com/@adilahmad0347/ai-and-prompt-engineering)
+- [The Future of Builders](https://medium.com/@adilahmad0347/the-future-of-builders)
+- [My Thoughts on AI (Part 2)](https://medium.com/@adilahmad0347/my-thoughts-on-ai-part-2)
+
 
 
 ---
