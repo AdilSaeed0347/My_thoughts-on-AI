@@ -1,0 +1,176 @@
+# Paper 01: Corrective Retrieval Augmented Generation (CRAG)
+
+**Authors:** Shi-Qi Yan, Jia-Chen Gu, Yun Zhu, Zhen-Hua Ling  
+**Institutions:** University of Science and Technology of China · UCLA · Google DeepMind  
+**Published:** arXiv:2401.15884v3 — October 2024  
+**Code:** [github.com/HuskyInSalt/CRAG](https://github.com/HuskyInSalt/CRAG)
+
+---
+
+## 1. The Problem
+
+Standard RAG has a fragile assumption at its core: that the retriever will return relevant documents.
+
+When it doesn't — and retrievers fail more often than we admit — the LLM doesn't just miss the answer. It can be actively misled. Feeding an LLM an irrelevant document about Batman when you asked about a screenwriter is worse than feeding it nothing.
+
+Most RAG systems handle this by ignoring the problem entirely. They retrieve the top-K documents and pass them to the generator, no questions asked. The CRAG paper asks the obvious question nobody had properly answered yet:
+
+> **What should happen when retrieval goes wrong?**
+
+---
+
+## 2. The Core Idea
+
+CRAG introduces a **self-correction layer** that sits between the retriever and the generator.
+
+Before the LLM ever sees a document, a lightweight evaluator scores whether that document is actually relevant to the query. Based on that score, one of three actions is triggered:
+
+- **Correct** — the documents look good, refine and use them
+- **Incorrect** — the documents are bad, discard them and search the web instead
+- **Ambiguous** — not sure, use both internal knowledge and web search
+
+This is the key insight: RAG doesn't have to be a pipeline that blindly passes everything forward. It can be a system that *knows what it doesn't know* and corrects accordingly.
+
+---
+
+## 3. How It Works
+
+### 3.1 The Retrieval Evaluator
+
+The evaluator is a fine-tuned **T5-large model (0.77B parameters)**. For each query-document pair, it outputs a relevance score from -1 to 1.
+
+Two thresholds divide this range into three zones:
+- Score above upper threshold → **Correct**
+- Score below lower threshold → **Incorrect**  
+- Score in between → **Ambiguous**
+
+The thresholds are set empirically per dataset (e.g., `(0.59, -0.99)` for PopQA).
+
+Why T5 and not a large LLM? Because it's fast, cheap, and — as the paper shows — it actually outperforms ChatGPT at this specific evaluation task (84.3% vs 64.7% accuracy).
+
+### 3.2 Action: Correct → Knowledge Refinement
+
+Even a relevant document contains noise. CRAG doesn't feed the whole document to the generator.
+
+Instead, it runs a **decompose-then-recompose** algorithm:
+1. Split the document into sentence-level strips
+2. Score each strip with the same evaluator
+3. Filter out strips below a threshold
+4. Concatenate the surviving strips → **internal knowledge**
+
+This gives the generator a cleaner, denser signal.
+
+### 3.3 Action: Incorrect → Web Search
+
+When all retrieved documents fail, CRAG turns to the web.
+
+The query is rewritten into keyword form using a GPT-3.5 prompt (e.g., *"Who was the screenwriter for Death of a Batman?"* → *"Death of a Batman; screenwriter; Wikipedia"*). The rewritten query is sent to Google Search API, top-5 URLs are fetched, and the same refinement algorithm extracts the relevant passages → **external knowledge**.
+
+Wikipedia pages are preferred to reduce noise.
+
+### 3.4 Action: Ambiguous → Both
+
+When the evaluator isn't confident, CRAG hedges by combining internal knowledge (from refinement) and external knowledge (from web search) and passing both to the generator.
+
+### 3.5 Algorithm Summary
+
+```
+Input: query x, retrieved documents D
+For each doc in D:
+    score = evaluator(x, doc)
+
+If max(scores) > upper_threshold:
+    → CORRECT: refine D → internal_knowledge k
+    → generate(x + k)
+
+Elif all scores < lower_threshold:
+    → INCORRECT: web_search(rewrite(x)) → external_knowledge k
+    → generate(x + k)
+
+Else:
+    → AMBIGUOUS: refine D + web_search → k_in + k_ex
+    → generate(x + k_in + k_ex)
+```
+
+---
+
+## 4. Results & Evidence
+
+Tested on four datasets across different task types:
+
+| Dataset | Task Type | CRAG vs RAG | CRAG vs Self-RAG |
+|---------|-----------|-------------|-----------------|
+| PopQA | Short-form QA | +7.0% accuracy | — |
+| Biography | Long-form generation | +14.9% FactScore | — |
+| PubHealth | True/False (health) | +36.6% accuracy | — |
+| Arc-Challenge | Multiple choice | +15.4% accuracy | — |
+
+Self-CRAG (CRAG plugged into the Self-RAG framework) also outperformed Self-RAG alone on most benchmarks.
+
+**Key findings from ablation studies:**
+
+- Removing *any* single action (Correct, Incorrect, Ambiguous) hurts performance — all three matter
+- Removing the Ambiguous action is especially damaging: without it, the system is brittle when the evaluator is uncertain
+- Removing document refinement causes the largest single drop
+- The T5 evaluator beats ChatGPT, ChatGPT-CoT, and ChatGPT-few-shot at retrieval assessment
+
+**Computational overhead:**
+
+| Method | TFLOPs/token | Time/instance |
+|--------|-------------|---------------|
+| RAG | 26.5 | 0.363s |
+| CRAG | 27.2 | 0.512s |
+| Self-RAG | 26.5–132.4 | 0.741s |
+| Self-CRAG | 27.2–80.2 | 0.908s |
+
+CRAG adds modest overhead while significantly improving correctness.
+
+---
+
+## 5. Builder's Takeaway
+
+### What CRAG teaches us that's immediately useful:
+
+**1. Your retriever is probably failing more than you think.**  
+Most RAG systems have no visibility into retrieval quality. Adding even a simple relevance check before generation is low-hanging fruit.
+
+**2. A small, specialized model beats a large general one for evaluation.**  
+A fine-tuned T5 (0.77B) outperforms ChatGPT at retrieval scoring. You don't need GPT-4 for every subtask.
+
+**3. The Ambiguous category is underrated.**  
+Binary Correct/Incorrect systems are fragile. Adding a "not sure" state that blends both paths is a simple robustness improvement.
+
+**4. Document refinement is high-value.**  
+Feeding whole documents to an LLM is wasteful and noisy. Splitting, scoring, and filtering passages before generation consistently improves output quality.
+
+**5. Web search as a fallback, not a first resort.**  
+CRAG only hits the web when the local corpus fails. This is more efficient and keeps costs down compared to always-on web search.
+
+### Minimal implementation ideas:
+
+- **Quick version:** Add a cross-encoder reranker after retrieval; if top score < threshold, trigger a web search fallback
+- **Full version:** Fine-tune a small model (T5 or similar) as a binary relevance classifier; add the three-action routing logic; apply chunk-level filtering before generation
+- **Plug-in version:** Wrap any existing RAG pipeline with a CRAG-style evaluator layer — the paper demonstrates this works with both standard RAG and Self-RAG
+
+---
+
+## 6. Personal Notes
+
+What I find most interesting about CRAG is how it reframes the problem. Standard RAG asks *"how do I retrieve better?"* CRAG asks *"what do I do when retrieval is wrong?"* — which is a more honest question.
+
+The Ambiguous action feels like the most practically important contribution. Real-world retrievers operate in uncertainty most of the time. Building systems that can hedge gracefully, rather than committing to a hard binary, is a design principle that extends well beyond RAG.
+
+The fact that a 0.77B evaluator beats GPT-3.5 at a specific task is also a reminder: large models are generalists. Small fine-tuned models win at narrow, well-defined tasks.
+
+---
+
+## References
+
+- Yan et al. (2024). *Corrective Retrieval Augmented Generation.* arXiv:2401.15884
+- Asai et al. (2024). *Self-RAG.* ICLR 2024
+- Lewis et al. (2020). *Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks.* NeurIPS 2020
+- Raffel et al. (2020). *Exploring the Limits of Transfer Learning with T5.* JMLR
+
+---
+
+*Study notes by Adil Saeed · [Medium](https://medium.com/@adilahmad0347) · [GitHub](https://github.com/AdilSaeed0347)*
