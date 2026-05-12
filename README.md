@@ -25,6 +25,7 @@ Below are the current and planned pieces. Each published article appears as a Ma
 - [The Future of Builders](https://medium.com/@adilahmad0347/the-future-of-builders)
 - [My Thoughts on AI (Part 2)](https://medium.com/@adilahmad0347/my-thoughts-on-ai-part-2)
 - [2026: The End of Coders, The Rise of Builders](articles/2026-the-end-of-coders-the-rise-of-builders.md)
+- [Understanding the corrective Rag](https://medium.com/@adilahmad0347/understanding-corrective-rag-crag-473073aba1ec)
 
 
 
